@@ -32,6 +32,44 @@ private class Destination
 
 ArrayList<Destination> destinations = new ArrayList<Destination>();
 
+public class DragPoint
+{
+  float pX;
+  float pY;
+  float radius = 15;
+  boolean hold = false;
+  public DragPoint(float x, float y) {
+    pX = x;
+    pY = y;
+  }
+  public void dragUpdateAndDraw(int mX, int mY, boolean mPressed) {
+    stroke(255);
+    strokeWeight(2);
+    fill(200, 0);
+    if (dist(pX, pY, mX, mY) <= radius) {
+      fill(200, 50);
+      if (mPressed) {
+        hold = true;
+      }
+    }
+    if (!mPressed) {
+      hold = false;
+    }
+    
+    if (hold) {
+      pX = mX;
+      pY = mY;
+    }
+          
+    circle(pX, pY, radius);
+  }
+
+}
+
+DragPoint p1 = new DragPoint(475, 475);
+DragPoint p2 = new DragPoint(525, 525);
+
+
 void setup() {
   size(1000, 800);  
   rectMode(CENTER);
@@ -56,6 +94,7 @@ void setup() {
   }
 
   Collections.shuffle(destinations); // randomize the order of the button; don't change this.
+  
 }
 
 
@@ -110,6 +149,15 @@ void draw() {
   fill(255);
   scaffoldControlLogic(); //you are going to want to replace this!
   text("Trial " + (trialIndex+1) + " of " +trialCount, width/2, inchToPix(.8f));
+  
+  
+  p1.dragUpdateAndDraw(mouseX, mouseY, mousePressed);
+  p2.dragUpdateAndDraw(mouseX, mouseY, mousePressed);
+  logoX = (p1.pX+p2.pX)/2;
+  logoY = (p1.pY+p2.pY)/2;
+  logoZ = dist(p1.pX, p1.pY, p2.pX, p2.pY) / sqrt(2);
+  logoRotation = degrees(atan((p1.pY - logoY)/(p1.pX - logoX))) - 135;
+  
 }
 
 //my example design for control, which is terrible
@@ -151,6 +199,8 @@ void scaffoldControlLogic()
   text("down", width/2, height-inchToPix(.4f));
   if (mousePressed && dist(width/2, height, mouseX, mouseY)<inchToPix(.8f))
     logoY+=inchToPix(.02f);
+  
+
 }
 
 void mousePressed()
@@ -160,13 +210,9 @@ void mousePressed()
     startTime = millis();
     println("time started!");
   }
-}
-
-void mouseReleased()
-{
-  //check to see if user clicked middle of screen within 3 inches, which this code uses as a submit button
-  if (dist(width/2, height/2, mouseX, mouseY)<inchToPix(3f))
-  {
+  
+  //Go to next
+  if ((mouseButton == RIGHT)) {
     if (userDone==false && !checkForSuccess())
       errorCount++;
 
@@ -178,6 +224,27 @@ void mouseReleased()
       finishTime = millis();
     }
   }
+}
+
+void mouseReleased()
+{
+  //check to see if user clicked middle of screen within 3 inches, which this code uses as a submit button
+  //if (dist(width/2, height/2, mouseX, mouseY)<inchToPix(3f))
+  //{
+  //  if (userDone==false && !checkForSuccess())
+  //    errorCount++;
+
+  //  trialIndex++; //and move on to next trial
+
+  //  if (trialIndex==trialCount && userDone==false)
+  //  {
+  //    userDone = true;
+  //    finishTime = millis();
+  //  }
+  //}
+  
+
+
 }
 
 //probably shouldn't modify this, but email me if you want to for some good reason.
