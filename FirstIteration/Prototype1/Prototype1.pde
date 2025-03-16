@@ -148,7 +148,7 @@ void draw() {
   //===========DRAW EXAMPLE CONTROLS=================
   fill(255);
   scaffoldControlLogic(); //you are going to want to replace this!
-  text("Trial " + (trialIndex+1) + " of " +trialCount, width/2, inchToPix(.8f));
+  text("Trial " + (trialIndex+1) + " of " +trialCount + ", right click to go to next trial", width/2, inchToPix(.8f));
   
   
   p1.dragUpdateAndDraw(mouseX, mouseY, mousePressed);
