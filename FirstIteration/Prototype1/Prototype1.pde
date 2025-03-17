@@ -143,11 +143,19 @@ void draw() {
   noStroke();
   fill(60, 60, 192, 192);
   rect(0, 0, logoZ, logoZ);
+  
+  fill(60, 180, 0);
+  if (dist(mouseX, mouseY, logoX, logoY) < 0.5*0.7*logoZ) {
+    fill(85, 255, 0); 
+  }
+  circle(0, 0, 0.7*logoZ);
+  
+  
   popMatrix();
 
   //===========DRAW EXAMPLE CONTROLS=================
   fill(255);
-  scaffoldControlLogic(); //you are going to want to replace this!
+  //scaffoldControlLogic(); //you are going to want to replace this!
   text("Trial " + (trialIndex+1) + " of " +trialCount + ", right click to go to next trial", width/2, inchToPix(.8f));
   
   
@@ -212,7 +220,8 @@ void mousePressed()
   }
   
   //Go to next
-  if ((mouseButton == RIGHT)) {
+  if (dist(mouseX, mouseY, logoX, logoY) < 0.5*0.7*logoZ) {
+    
     if (userDone==false && !checkForSuccess())
       errorCount++;
 
@@ -224,6 +233,7 @@ void mousePressed()
       finishTime = millis();
     }
   }
+
 }
 
 void mouseReleased()
