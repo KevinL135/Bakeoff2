@@ -32,43 +32,10 @@ private class Destination
 
 ArrayList<Destination> destinations = new ArrayList<Destination>();
 
-public class DragPoint
-{
-  float pX;
-  float pY;
-  float radius = 15;
-  boolean hold = false;
-  public DragPoint(float x, float y) {
-    pX = x;
-    pY = y;
-  }
-  public void dragUpdateAndDraw(int mX, int mY, boolean mPressed) {
-    stroke(255);
-    strokeWeight(2);
-    fill(200, 0);
-    if (dist(pX, pY, mX, mY) <= radius) {
-      fill(200, 50);
-      if (mPressed) {
-        hold = true;
-      }
-    }
-    if (!mPressed) {
-      hold = false;
-    }
-    
-    if (hold) {
-      pX = mX;
-      pY = mY;
-    }
-          
-    circle(pX, pY, radius);
-  }
-
-}
-
-DragPoint p1 = new DragPoint(475, 475);
-DragPoint p2 = new DragPoint(525, 525);
-
+int moveState = 0;
+int handleExtension = 25;
+float rotHandleX = 0;
+float rotHandleY = 0;
 
 void setup() {
   size(1000, 800);  
@@ -129,10 +96,13 @@ void draw() {
     noFill();
     strokeWeight(3f);
     if (trialIndex==i)
-      stroke(255, 0, 0, 192); //set color to semi translucent
+      stroke(255, 0, 0, 192); //set color to semi translucent      
     else
       stroke(128, 128, 128, 128); //set color to semi translucent
     rect(0, 0, d.z, d.z);
+    
+
+    
     popMatrix();
   }
 
@@ -144,11 +114,11 @@ void draw() {
   fill(60, 60, 192, 192);
   rect(0, 0, logoZ, logoZ);
   
-  fill(60, 180, 0);
-  if (dist(mouseX, mouseY, logoX, logoY) < 0.5*0.7*logoZ) {
-    fill(85, 255, 0); 
-  }
-  circle(0, 0, 0.7*logoZ);
+  //fill(60, 180, 0);
+  //if (dist(mouseX, mouseY, logoX, logoY) < 0.5*0.7*logoZ) {
+  //  fill(85, 255, 0); 
+  //}
+  //circle(0, 0, 0.7*logoZ);
   
   
   popMatrix();
@@ -156,15 +126,81 @@ void draw() {
   //===========DRAW EXAMPLE CONTROLS=================
   fill(255);
   //scaffoldControlLogic(); //you are going to want to replace this!
-  text("Trial " + (trialIndex+1) + " of " +trialCount + ", click circle to go to next trial", width/2, inchToPix(.8f));
+  text("Trial " + (trialIndex+1) + " of " +trialCount + ", click the dot and rectangle to set the position and scale/rotation, green means you are within the error", width/2, inchToPix(.8f));
   
   
-  p1.dragUpdateAndDraw(mouseX, mouseY, mousePressed);
-  p2.dragUpdateAndDraw(mouseX, mouseY, mousePressed);
-  logoX = (p1.pX+p2.pX)/2;
-  logoY = (p1.pY+p2.pY)/2;
-  logoZ = dist(p1.pX, p1.pY, p2.pX, p2.pY) / sqrt(2);
-  logoRotation = degrees(atan((p1.pY - logoY)/(p1.pX - logoX))) - 135;
+  
+
+  
+  // Calculate the base distance for the handle from the center
+  float halfSize = logoZ / 2;
+  float rotationHandleDistance = halfSize + handleExtension;
+  
+  if (moveState == 0) {
+    rotHandleX = logoX + rotationHandleDistance * sin(radians(logoRotation));
+    rotHandleY = logoY - rotationHandleDistance * cos(radians(logoRotation));
+  }
+  else {
+    rotHandleX = mouseX;
+    rotHandleY = mouseY;
+    float rotHandleDist = dist(rotHandleX, rotHandleY, logoX, logoY) - handleExtension;
+    logoZ = 2*rotHandleDist;
+    logoRotation = degrees(atan((rotHandleY-logoY)/(rotHandleX-logoX)));
+  }
+  
+
+  
+  float dotSize = inchToPix(0.15f);
+  
+  // Draw rotation/resize handle
+  fill(255, 255, 0);
+  noStroke();
+  ellipse(rotHandleX, rotHandleY, dotSize*1.2, dotSize*1.2);
+  
+  // Draw line connecting center to handle
+  stroke(255, 255, 0, 150);
+  strokeWeight(2);
+  line(logoX, logoY, rotHandleX, rotHandleY);
+  noStroke();
+  
+  
+  pushMatrix();
+  Destination target = destinations.get(trialIndex);
+  translate(target.x, target.y); //center the drawing coordinates to the center of the destination trial
+    
+  rotate(radians(target.rotation)); //rotate around the origin of the Ddestination trial
+
+    
+  noStroke();
+  fill(255);
+  if (positionCorrect()) {
+    fill(0, 255, 0);
+  }
+  circle(0, 0, inchToPix(.05f));
+  if (moveState == 0) {
+    logoX = mouseX;
+    logoY = mouseY;
+  }
+  //Draw handle target
+  noStroke();
+  fill(255);
+  if (rotationScaleCorrect()) {
+    fill(0, 255, 0);
+  }
+  if (moveState == 1) {
+    popMatrix();
+    translate(logoX, logoY);
+    rotate(radians(target.rotation));
+    pushMatrix();
+  }
+  stroke(255, 255, 255, 150);
+  strokeWeight(2);
+  line(0, 0, 0, target.z/2 + handleExtension);
+  rectMode(CENTER);
+  rect(0, target.z/2 + handleExtension, (target.z/2 + handleExtension)*radians(5), inchToPix(.1f));
+      
+  popMatrix();
+
   
 }
 
@@ -220,8 +256,23 @@ void mousePressed()
   }
   
   //Go to next
-  if (dist(mouseX, mouseY, logoX, logoY) < 0.5*0.7*logoZ) {
+  //if (dist(mouseX, mouseY, logoX, logoY) < 0.5*0.7*logoZ) {
     
+  //  if (userDone==false && !checkForSuccess())
+  //    errorCount++;
+
+  //  trialIndex++; //and move on to next trial
+
+  //  if (trialIndex==trialCount && userDone==false)
+  //  {
+  //    userDone = true;
+  //    finishTime = millis();
+  //  }
+  //}
+  if (moveState == 0) {
+    moveState = 1;
+  }
+  else {
     if (userDone==false && !checkForSuccess())
       errorCount++;
 
@@ -232,8 +283,8 @@ void mousePressed()
       userDone = true;
       finishTime = millis();
     }
+    moveState = 0;
   }
-
 }
 
 void mouseReleased()
@@ -255,6 +306,16 @@ void mouseReleased()
   
 
 
+}
+
+public boolean positionCorrect() {
+  Destination d = destinations.get(trialIndex);  
+  return dist(d.x, d.y, logoX, logoY)<inchToPix(.05f);
+}
+
+public boolean rotationScaleCorrect() {
+  Destination d = destinations.get(trialIndex);  
+  return calculateDifferenceBetweenAngles(d.rotation, logoRotation)<=5 && abs(d.z - logoZ)<inchToPix(.1f);
 }
 
 //probably shouldn't modify this, but email me if you want to for some good reason.
