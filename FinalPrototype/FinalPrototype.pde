@@ -129,7 +129,7 @@ void draw() {
   //===========DRAW EXAMPLE CONTROLS=================
   fill(255);
   //scaffoldControlLogic(); //you are going to want to replace this!
-  text("Trial " + (trialIndex+1) + " of " +trialCount + ", click the dot and rectangle to set the position and scale/rotation, green means you are within the error", width/2, inchToPix(.8f));
+  text("Trial " + (trialIndex+1) + " of " +trialCount, width/2, inchToPix(.8f));
   
   
   
@@ -172,18 +172,18 @@ void draw() {
   line(logoX, logoY, rotHandleX, rotHandleY);
   noStroke();
   
-  if (moveState == 1) {
-    noFill();
-    stroke(255, 170);
-    strokeWeight(1.5);
-    circle(logoX, logoY, logoZ + 2*handleExtension);
-  }
+  //if (moveState == 1) {
+  //  noFill();
+  //  stroke(255, 170);
+  //  strokeWeight(1.5);
+  //  circle(logoX, logoY, logoZ + 2*handleExtension);
+  //}
   
   Destination target = destinations.get(trialIndex);
   
-  if (moveState == 0) {
-    drawTargetIndicators(target);
-  }
+  //if (moveState == 0) {
+  //  drawTargetIndicators(target);
+  //}
   
   pushMatrix();
   
@@ -210,14 +210,14 @@ void draw() {
     rotate(radians(modRotation)); //rotate around the origin of the Ddestination trial
   }
   
-  if (moveState == 1) {
-    noFill();
-    stroke(255, 255, 0, 170);
-    strokeWeight(1.5);
-    circle(0, 0, target.z + 2*handleExtension);
-  }
+  //if (moveState == 1) {
+  //  noFill();
+  //  stroke(255, 255, 0, 170);
+  //  strokeWeight(1.5);
+  //  circle(0, 0, target.z + 2*handleExtension);
+  //}
   
-  stroke(255, 190, 50, 180);
+  stroke(255, 255, 0, 180);
   strokeWeight(2);
   line(0, 0, 0, target.z/2 + handleExtension);   
   
